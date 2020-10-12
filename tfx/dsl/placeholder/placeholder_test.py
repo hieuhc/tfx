@@ -200,6 +200,19 @@ class PlaceholderTest(tf.test.TestCase):
         }
     """)
 
+  def testExecContextSimple(self):
+    self._assert_placeholder_pb_equal(
+        ph.context('platform_config'), """
+        placeholder {
+          type: CONTEXT
+          key: "platform_config"
+        }
+    """)
+
+  def testExecContextInvalidKey(self):
+    with self.assertRaises(ValueError):
+      ph.context('invalid_key')
+
 
 if __name__ == '__main__':
   tf.test.main()

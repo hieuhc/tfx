@@ -97,6 +97,42 @@ def exec_property(key: str) -> 'Placeholder':
   return ExecPropertyPlaceholder(key)
 
 
+SUPPORTED_CONTEXT_KEYS = frozenset([
+    'platform_config', 'stateful_working_dir', 'executor_output_uri',
+    'executor_spec', 'node_info', 'pipeline_info'
+])
+
+
+def context(key: str) -> 'Placeholder':
+  """Returns a Placeholder that represents a context.
+
+  Args:
+    key: The key of the output artifact.
+
+  Returns:
+    Currently the context includes following keys:
+    1. platform_config: A platform_config proto that contains platform specific
+       information.
+    2. stateful_working_dir: The directory can be used by the executor to store
+       working states.
+    3. executor_output_uri: The uri where the executor result should be written
+       to. The executors should use this uri to "return" ExecutorOutput to the
+       launcher.
+    4. executor_spec: The executor spec proto.
+    5. node_info: NodeInfo proto containing the node information.
+    6. pipeline_info: PipelineInfo proto containing the pipeline information.
+
+    Accessing a proto field can be represented as if accessing a proto field in
+    python.
+
+  Raises:
+    ValueError: If received unsupported key.
+  """
+  if key not in SUPPORTED_CONTEXT_KEYS:
+    raise ValueError(f'Got unsupported execution context key: {key}.')
+  return ContextPlaceholder(key)
+
+
 class _PlaceholderOperator(abc.ABC):
   """An Operator performs an operation on a Placeholder.
 
@@ -127,8 +163,7 @@ class _ArtifactUriOperator(_PlaceholderOperator):
       self, sub_expression_pb: placeholder_pb2.PlaceholderExpression
   ) -> placeholder_pb2.PlaceholderExpression:
     result = placeholder_pb2.PlaceholderExpression()
-    result.operator.artifact_uri_op.expression.CopyFrom(
-        sub_expression_pb)
+    result.operator.artifact_uri_op.expression.CopyFrom(sub_expression_pb)
     if self._split:
       result.operator.artifact_uri_op.split = self._split
     return result
@@ -144,8 +179,7 @@ class _ArtifactValueOperator(_PlaceholderOperator):
       self, sub_expression_pb: placeholder_pb2.PlaceholderExpression
   ) -> placeholder_pb2.PlaceholderExpression:
     result = placeholder_pb2.PlaceholderExpression()
-    result.operator.artifact_value_op.expression.CopyFrom(
-        sub_expression_pb)
+    result.operator.artifact_value_op.expression.CopyFrom(sub_expression_pb)
     return result
 
 
@@ -246,8 +280,7 @@ class _ProtoOperator(_PlaceholderOperator):
   ) -> placeholder_pb2.PlaceholderExpression:
     result = placeholder_pb2.PlaceholderExpression()
     result.operator.proto_op.expression.CopyFrom(sub_expression_pb)
-    result.operator.proto_op.proto_field_path.extend(
-        self._proto_field_path)
+    result.operator.proto_op.proto_field_path.extend(self._proto_field_path)
     return result
 
 
@@ -302,14 +335,8 @@ class ArtifactPlaceholder(Placeholder):
     return self
 
 
-class ExecPropertyPlaceholder(Placeholder):
-  """ExecProperty Placeholder represents an execution property.
-
-  Prefer to use exec_property(...) to create exec property placeholders.
-  """
-
-  def __init__(self, key: str):
-    super().__init__(placeholder_pb2.Placeholder.Type.EXEC_PROPERTY, key)
+class _ProtoAccessiblePlaceholder(Placeholder, abc.ABC):
+  """A base Placeholder for accessing proto fields using Python proto syntax."""
 
   def __getattr__(self, field_name: str):
     proto_access_field = f'.{field_name}'
@@ -326,3 +353,25 @@ class ExecPropertyPlaceholder(Placeholder):
     else:
       self._operators.append(_ProtoOperator(proto_access_field))
     return self
+
+
+class ExecPropertyPlaceholder(_ProtoAccessiblePlaceholder):
+  """ExecProperty Placeholder represents an execution property.
+
+  Prefer to use exec_property(...) to create exec property placeholders.
+  """
+
+  def __init__(self, key: str):
+    super().__init__(placeholder_pb2.Placeholder.Type.EXEC_PROPERTY, key)
+
+
+class ContextPlaceholder(_ProtoAccessiblePlaceholder):
+  """Context Placeholder represents some specific information for execution.
+
+  Prefer to use context(...) to create context placeholders.
+  """
+
+  def __init__(self, key: str):
+    if key not in SUPPORTED_CONTEXT_KEYS:
+      raise ValueError(f'Got unsupported execution context key: {key}.')
+    super().__init__(placeholder_pb2.Placeholder.Type.CONTEXT, key)
