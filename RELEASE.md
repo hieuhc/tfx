@@ -12,10 +12,6 @@
     not-yet-available value at pipeline authoring time.
 *   Added the LocalDagRunner to allow local pipeline execution without using
     Apache Beam.
-*   Added support for the `tfx.dsl.io.fileio` pluggable filesystem interface,
-    with initial support for local files and the Tensorflow GFile filesystem
-    implementation.
-*   Scripts - run_component - Added a way to output artifact properties.
 
 ## Breaking changes
 
