@@ -15,7 +15,8 @@
 *   Added support for the `tfx.dsl.io.fileio` pluggable filesystem interface,
     with initial support for local files and the Tensorflow GFile filesystem
     implementation.
-*   Scripts - run_component - Added a way to output artifact properties.
+*   SDK and example code now uses `tfx.dsl.io.fileio` instead of `tf.io.gfile`
+    when possible for filesystem I/O implementation portability.
 
 ## Breaking changes
 
@@ -37,6 +38,7 @@
     tfx/examples.
 *   Fixed the run_component script.
 *   Stopped depending on `WTForms`.
+*   Scripts - run_component - Added a way to output artifact properties.
 
 ### For pipeline authors
 
