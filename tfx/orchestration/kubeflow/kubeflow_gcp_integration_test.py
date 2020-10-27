@@ -124,7 +124,8 @@ class KubeflowGCPIntegrationTest(kubeflow_test_utils.BaseKubeflowTest):
     ])
     self._compile_and_run_pipeline(pipeline)
 
-  def testStatisticsGenOnDataflowRunner(self):
+  # TODO(b/170163019) Re-enable Dataflow tests after tfx-bsl 0.25.0 release.
+  def DISABLED_testStatisticsGenOnDataflowRunner(self):
     """StatisticsGen-only test pipeline on DataflowRunner."""
     pipeline_name = 'kubeflow-statistics-gen-dataflow-test-{}'.format(
         test_utils.random_id())
@@ -134,7 +135,8 @@ class KubeflowGCPIntegrationTest(kubeflow_test_utils.BaseKubeflowTest):
     ])
     self._compile_and_run_pipeline(pipeline)
 
-  def testTransformOnDataflowRunner(self):
+  # TODO(b/170163019) Re-enable Dataflow tests after tfx-bsl 0.25.0 release.
+  def DISABLED_testTransformOnDataflowRunner(self):
     """Transform-only test pipeline on DataflowRunner."""
     pipeline_name = 'kubeflow-transform-dataflow-test-{}'.format(
         test_utils.random_id())
@@ -147,7 +149,8 @@ class KubeflowGCPIntegrationTest(kubeflow_test_utils.BaseKubeflowTest):
     ])
     self._compile_and_run_pipeline(pipeline)
 
-  def testEvaluatorOnDataflowRunner(self):
+  # TODO(b/170163019) Re-enable Dataflow tests after tfx-bsl 0.25.0 release.
+  def DISABLED_testEvaluatorOnDataflowRunner(self):
     """Evaluator-only test pipeline on DataflowRunner."""
     pipeline_name = 'kubeflow-evaluator-dataflow-test-{}'.format(
         test_utils.random_id())
